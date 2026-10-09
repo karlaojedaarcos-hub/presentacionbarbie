@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Barbie Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Pacifico&display=swap" rel="stylesheet">
+<style>
+:root {
+  --pink:#FF69B4; --hot:#FF1493; --pastel:#FFB6C1; --light:#FFE4EC;
+  --gold:#FFD700; --purple:#C44DFF; --blue:#5DADE2; --dark:#2D1B2E;
+  --shadow:0 12px 35px rgba(255,105,180,.3);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Poppins',sans-serif;min-height:100vh;color:var(--dark);overflow-x:hidden;
+  background:linear-gradient(145deg,rgba(255,228,236,.78),rgba(255,105,180,.55),rgba(196,77,255,.5)),
+             url('barbie.jpg') center/cover fixed no-repeat;
+  background-color:#FFE4EC;transition:background .6s;
+}
+body.ken-mode{
+  background:linear-gradient(145deg,rgba(173,216,230,.78),rgba(93,173,226,.55),rgba(70,130,180,.5)),
+             url('barbie.jpg') center/cover fixed no-repeat;
+  background-color:#E0F0FF;
+}
+#welcome{
+  position:fixed;inset:0;z-index:2000;
+  background:linear-gradient(160deg,rgba(255,228,236,.92),rgba(255,105,180,.88),rgba(196,77,255,.85)),
+             url('barbie.jpg') center/cover no-repeat;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:20px;text-align:center;transition:opacity .5s,visibility .5s;
+}
+#welcome.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.welcome-logo{max-width:280px;width:80%;margin-bottom:18px;filter:drop-shadow(0 6px 18px rgba(0,0,0,.25))}
+.w-title{font-family:'Pacifico',cursive;font-size:2.1rem;color:#fff;text-shadow:0 3px 14px rgba(0,0,0,.35);margin-bottom:6px}
+.w-sub{color:#fff;font-size:1.15rem;margin-bottom:22px;text-shadow:0 1px 6px rgba(0,0,0,.3)}
+.w-box{background:rgba(255,255,255,.97);border-radius:24px;padding:28px 32px;box-shadow:var(--shadow);max-width:400px;width:100%}
+.w-box h2{color:var(--hot);margin-bottom:12px;font-size:1.3rem}
+#nameInput{width:100%;padding:13px 18px;border:2px solid var(--pastel);border-radius:50px;font-size:1rem;outline:none;margin-bottom:12px}
+#nameInput:focus{border-color:var(--hot);box-shadow:0 0 0 4px rgba(255,105,180,.2)}
+.btn{display:inline-block;padding:12px 28px;border:none;border-radius:50px;font-weight:700;font-size:.95rem;cursor:pointer;transition:all .3s;font-family:'Poppins',sans-serif}
+.btn-pink{background:linear-gradient(135deg,#FF1493,#FF69B4,#C44DFF);background-size:200% 200%;color:#fff;animation:gradientShift 4s ease infinite}
+.btn-pink:hover{transform:translateY(-3px);box-shadow:0 8px 25px rgba(255,20,147,.45)}
+@keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.btn-outline{background:transparent;border:2px solid var(--pink);color:var(--hot)}
+.btn-outline:hover{background:var(--light)}
+.btn-sm{padding:9px 18px;font-size:.88rem}
+.char-choice{display:flex;gap:16px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.char-card{background:#fff;border:3px solid transparent;border-radius:18px;padding:18px 22px;cursor:pointer;transition:all .3s;width:135px;box-shadow:0 6px 18px rgba(0,0,0,.1)}
+.char-card:hover{border-color:var(--hot);transform:scale(1.08)}
+.char-card.ken:hover{border-color:var(--blue)}
+.char-emoji{font-size:2.8rem;margin-bottom:6px}
+.char-label{font-weight:800;font-size:1.05rem}
+.name-actions{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+
+#app{display:none;min-height:100vh}
+#app.visible{display:block}
+nav{background:rgba(255,255,255,.94);backdrop-filter:blur(16px);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:10px}
+.nav-logo{font-family:'Pacifico',cursive;font-size:1.6rem;background:linear-gradient(90deg,#FF1493,#C44DFF,#FFD700);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;gap:6px;flex-wrap:wrap}
+.nav-btn{padding:8px 15px;border:none;border-radius:50px;background:transparent;font-weight:600;cursor:pointer;transition:all .25s;font-family:'Poppins',sans-serif;color:var(--dark);font-size:.88rem}
+.nav-btn:hover,.nav-btn.active{background:linear-gradient(135deg,var(--light),#E8B4F8);color:var(--hot)}
+.user-info{font-size:.85rem;color:#666}
+main{max-width:1140px;margin:0 auto;padding:24px 16px 80px}
+.section{display:none;animation:fadeIn .45s}
+.section.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.page-title{font-size:1.75rem;color:var(--hot);margin-bottom:6px}
+.page-sub{color:#444;margin-bottom:18px;font-size:.95rem}
+.quote-box{background:linear-gradient(135deg,#FFE4EC,#E8B4F8,#A8D8FF);border-radius:18px;padding:18px 24px;text-align:center;margin:16px 0 24px;font-family:'Pacifico',cursive;font-size:1.3rem;color:var(--hot);box-shadow:0 6px 20px rgba(255,105,180,.2)}
+
+.custom-layout{display:grid;grid-template-columns:290px 1fr;gap:24px;align-items:start}
+@media(max-width:900px){.custom-layout{grid-template-columns:1fr}}
+.preview-card{background:rgba(255,255,255,.97);border-radius:24px;padding:20px;box-shadow:var(--shadow);text-align:center;position:sticky;top:75px}
+.preview-title{font-weight:800;color:var(--hot);margin-bottom:12px;font-size:1.15rem}
+.stage{width:100%;max-width:250px;height:480px;margin:0 auto 16px;background:linear-gradient(180deg,#FFF0F5,#FFE4EC,#FFD6E8);border-radius:20px;border:4px solid var(--gold);position:relative;overflow:hidden}
+.doll{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:155px;height:440px}
+.doll-head{width:60px;height:60px;border-radius:50%;margin:0 auto;position:relative;z-index:25;box-shadow:0 4px 10px rgba(0,0,0,.12)}
+.doll-eyes{position:absolute;top:25px;left:50%;transform:translateX(-50%);width:32px;display:flex;justify-content:space-between}
+.doll-eye{width:9px;height:11px;background:#2D1B2E;border-radius:50%}
+.doll-smile{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);width:15px;height:7px;border-bottom:2.5px solid #E07A7A;border-radius:0 0 50% 50%}
+.doll-hair{position:absolute;z-index:8;left:50%;transform:translateX(-50%);transition:all .35s}
+.h-long-straight{width:86px;height:130px;top:-36px;border-radius:44% 44% 16% 16%}
+.h-long-wavy{width:94px;height:135px;top:-36px;border-radius:48% 48% 28% 28%}
+.h-long-curly{width:100px;height:120px;top:-32px;border-radius:42%;box-shadow:inset -10px 0 0 rgba(0,0,0,.07),inset 10px 0 0 rgba(0,0,0,.07)}
+.h-afro{width:115px;height:105px;top:-38px;border-radius:50%}
+.h-short-straight{width:74px;height:44px;top:-14px;border-radius:50% 50% 12% 12%}
+.h-short-wavy{width:78px;height:50px;top:-15px;border-radius:50% 50% 22% 22%}
+.h-short-curly{width:84px;height:52px;top:-15px;border-radius:40%}
+.h-ponytail{width:72px;height:50px;top:-15px;border-radius:50% 50% 16% 16%}
+.h-ponytail::after{content:'';position:absolute;top:42px;right:-18px;width:28px;height:95px;background:inherit;border-radius:18px}
+.h-two-tails{width:76px;height:46px;top:-13px;border-radius:50% 50% 14% 14%}
+.h-two-tails::before,.h-two-tails::after{content:'';position:absolute;top:38px;width:22px;height:70px;background:inherit;border-radius:14px}
+.h-two-tails::before{left:-6px}.h-two-tails::after{right:-6px}
+.h-braid{width:80px;height:54px;top:-17px;border-radius:50% 50% 15% 15%}
+.h-braid::after{content:'';position:absolute;top:46px;left:50%;transform:translateX(-50%);width:20px;height:105px;background:inherit;border-radius:10px}
+.h-bun{width:66px;height:44px;top:-24px;border-radius:50%}
+.h-bun::after{content:'';position:absolute;top:-15px;left:50%;transform:translateX(-50%);width:38px;height:38px;background:inherit;border-radius:50%}
+.h-buzz{width:66px;height:28px;top:-4px;border-radius:50% 50% 8% 8%}
+.h-bald{display:none!important}
+
+.doll-torso{width:54px;height:88px;margin:-6px auto 0;border-radius:14px 14px 8px 8px;position:relative;z-index:20;transition:background .3s;overflow:visible}
+.doll-arm-l,.doll-arm-r{position:absolute;width:15px;height:72px;background:var(--skin,#FFDBB5);border-radius:9px;top:8px;z-index:19}
+.doll-arm-l{left:-13px;transform:rotate(11deg)}
+.doll-arm-r{right:-13px;transform:rotate(-11deg)}
+.doll-hand-l,.doll-hand-r{position:absolute;width:17px;height:17px;background:var(--skin,#FFDBB5);border-radius:50%;bottom:-9px;left:50%;transform:translateX(-50%)}
+
+.top-detail{position:absolute;pointer-events:none;z-index:22}
+.top-tshirt .top-collar-round{top:0;left:50%;transform:translateX(-50%);width:26px;height:10px;border-radius:0 0 50% 50%;background:rgba(255,255,255,.35)}
+.top-hoodie{border-radius:20px 20px 10px 10px!important}
+.top-hoodie .hood{top:-14px;left:50%;transform:translateX(-50%);width:42px;height:22px;border-radius:50% 50% 0 0;background:inherit;border:2px solid rgba(0,0,0,.12);z-index:23}
+.top-hoodie .kangaroo{bottom:12px;left:50%;transform:translateX(-50%);width:28px;height:16px;border:2px solid rgba(0,0,0,.18);border-radius:4px}
+.top-shirt .collar-left,.top-shirt .collar-right{top:-2px;width:16px;height:12px;background:rgba(255,255,255,.5)}
+.top-shirt .collar-left{left:6px;transform:skewX(-18deg);border-radius:2px 0 0 0}
+.top-shirt .collar-right{right:6px;transform:skewX(18deg);border-radius:0 2px 0 0}
+.top-shirt .btn-row{top:22px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:7px}
+.top-shirt .btn-dot{width:5px;height:5px;background:rgba(0,0,0,.25);border-radius:50%}
+.top-shirt .pocket{top:28px;right:7px;width:12px;height:11px;border:1.5px solid rgba(0,0,0,.2);border-radius:2px}
+.top-blazer .lapel-l,.top-blazer .lapel-r{top:2px;width:14px;height:28px;background:rgba(0,0,0,.12)}
+.top-blazer .lapel-l{left:2px;transform:skewX(-12deg);border-radius:0 0 0 4px}
+.top-blazer .lapel-r{right:2px;transform:skewX(12deg);border-radius:0 0 4px 0}
+.top-blazer .blazer-btn{top:36px;left:50%;transform:translateX(-50%);width:6px;height:6px;background:rgba(255,255,255,.6);border-radius:50%}
+.top-chef{background:#fff!important}
+.top-chef .chef-collar{top:0;left:50%;transform:translateX(-50%);width:32px;height:14px;border-radius:0 0 6px 6px;background:#f0f0f0;border:1px solid #ddd}
+.top-chef .chef-btns{top:24px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px}
+.top-chef .chef-btns span{width:6px;height:6px;background:#ccc;border-radius:50%;display:block}
+.top-lab{background:#F5F7FA!important;box-shadow:inset 0 0 0 2px rgba(0,0,0,.08)}
+.top-lab .lab-collar{top:0;left:50%;transform:translateX(-50%);width:30px;height:12px;border-radius:0 0 5px 5px;background:#e8ecf0}
+.top-lab .lab-pocket{bottom:14px;right:6px;width:14px;height:16px;border:1.5px solid rgba(0,0,0,.15);border-radius:2px}
+
+.doll-bottom{width:95px;height:80px;margin:-10px auto 0;border-radius:10px 10px 34px 34px;position:relative;z-index:15;transition:all .3s}
+.doll-legs{width:42px;height:118px;background:var(--skin,#FFDBB5);margin:-16px auto 0;border-radius:0 0 18px 18px;z-index:12}
+.doll-shoes{width:58px;height:22px;margin:-10px auto 0;border-radius:8px 8px 14px 14px;transition:background .3s;z-index:14;position:relative}
+
+.controls-card{background:rgba(255,255,255,.97);border-radius:24px;padding:22px;box-shadow:var(--shadow)}
+.tab-btns{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+.tab-btn{padding:8px 15px;border:2px solid var(--pastel);border-radius:50px;background:#fff;font-weight:700;cursor:pointer;font-size:.84rem;transition:all .25s;font-family:'Poppins',sans-serif}
+.tab-btn.active,.tab-btn:hover{background:linear-gradient(135deg,var(--hot),var(--purple));color:#fff;border-color:transparent}
+.panel{display:none}.panel.active{display:block}
+.option-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.opt-btn{padding:8px 13px;border:2px solid #eee;border-radius:12px;background:#fff;cursor:pointer;font-size:.82rem;font-weight:600;transition:all .2s;font-family:'Poppins',sans-serif}
+.opt-btn:hover,.opt-btn.active{border-color:var(--hot);background:var(--light);color:var(--hot);transform:scale(1.04)}
+.color-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.color-swatch{width:32px;height:32px;border-radius:50%;border:3px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,.2);cursor:pointer;transition:transform .2s}
+.color-swatch:hover,.color-swatch.active{transform:scale(1.22);border-color:var(--gold)}
+.section-label{display:block;font-weight:700;font-size:.9rem;margin:10px 0 6px;color:#555}
+.action-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;justify-content:center}
+
+#afterSave{display:none;text-align:center;margin-top:28px;animation:fadeIn .5s}
+#afterSave.show{display:block}
+.congrats{background:linear-gradient(135deg,#FFF0F5,#FFE4EC,#E8B4F8);border-radius:22px;padding:26px;margin-bottom:22px;box-shadow:var(--shadow)}
+.congrats h2{color:var(--hot);font-size:1.6rem;margin-bottom:8px}
+.congrats p{font-size:1.05rem;color:#555}
+.job-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:12px;margin:18px 0}
+.job-btn{background:#fff;border:2px solid var(--pastel);border-radius:16px;padding:14px 10px;cursor:pointer;text-align:center;transition:all .28s;font-family:'Poppins',sans-serif}
+.job-btn:hover{border-color:var(--hot);transform:translateY(-4px);box-shadow:0 10px 22px rgba(255,105,180,.3)}
+.job-btn.active{background:linear-gradient(135deg,var(--hot),var(--purple));color:#fff;border-color:transparent}
+.job-icon{font-size:1.9rem;margin-bottom:4px}
+.job-name{font-weight:800;font-size:.86rem}
+.job-result{display:none;background:linear-gradient(135deg,#FFE4EC,#E8B4F8,#A8D8FF);border-radius:20px;padding:24px;margin-top:18px;text-align:center;animation:fadeIn .4s;box-shadow:var(--shadow)}
+.job-result.show{display:block}
+.job-result h3{color:var(--hot);font-size:1.45rem;margin-bottom:10px}
+.job-result p{font-size:1rem;line-height:1.55;margin-bottom:8px}
+
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-bottom:26px}
+.reveal-card{background:rgba(255,255,255,.97);border-radius:18px;overflow:hidden;box-shadow:var(--shadow);cursor:pointer;transition:transform .3s}
+.reveal-card:hover{transform:translateY(-4px)}
+.reveal-header{padding:16px 18px;background:linear-gradient(135deg,var(--pastel),#E8B4F8);font-weight:800;color:var(--hot);display:flex;justify-content:space-between;align-items:center;font-size:.95rem}
+.reveal-body{max-height:0;overflow:hidden;transition:max-height .4s,padding .4s;font-size:.92rem;line-height:1.55;color:#444;padding:0 18px}
+.reveal-card.open .reveal-body{max-height:220px;padding:14px 18px 18px}
+.reveal-arrow{transition:transform .3s}
+.reveal-card.open .reveal-arrow{transform:rotate(180deg)}
+
+.ruth-section{background:rgba(255,255,255,.97);border-radius:22px;padding:26px;box-shadow:var(--shadow);margin-bottom:26px}
+.ruth-photos{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:22px 0}
+@media(max-width:620px){.ruth-photos{grid-template-columns:1fr}}
+.ruth-photo-card{text-align:center}
+.ruth-photo-card img{width:100%;max-width:300px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.18);object-fit:cover;aspect-ratio:3/4;background:#f0f0f0}
+.ruth-photo-card p{font-size:.88rem;color:#555;margin-top:10px;line-height:1.4}
+.ruth-quote{font-family:'Pacifico',cursive;font-size:1.15rem;color:var(--hot);margin:12px 0;line-height:1.45}
+
+.timeline{position:relative;padding:12px 0 12px 30px}
+.timeline::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:5px;background:linear-gradient(var(--hot),var(--purple),var(--gold));border-radius:5px}
+.tl-item{position:relative;margin-bottom:18px;padding-left:20px;cursor:pointer}
+.tl-item::before{content:'';position:absolute;left:-27px;top:6px;width:16px;height:16px;background:var(--hot);border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 3px var(--pastel)}
+.tl-year{font-weight:800;color:var(--hot)}
+.tl-title{font-weight:700;margin:3px 0}
+.tl-desc{font-size:.88rem;color:#555;max-height:0;overflow:hidden;transition:max-height .35s}
+.tl-item.open .tl-desc{max-height:110px;margin-top:5px}
+
+.final-msg{text-align:center;padding:36px 16px;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.35)}
+.final-msg h2{font-family:'Pacifico',cursive;font-size:2rem;margin-bottom:10px}
+
+.ttt-wrapper{max-width:520px;margin:0 auto}
+.ttt-mode-screen,.ttt-symbol-screen{text-align:center;padding:30px 20px}
+.ttt-mode-title{font-size:1.6rem;color:var(--hot);margin-bottom:8px;font-weight:800}
+.ttt-mode-sub{color:#555;margin-bottom:28px}
+.ttt-mode-btns{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
+.ttt-mode-btn{background:#fff;border:3px solid var(--pastel);border-radius:20px;padding:24px 28px;cursor:pointer;transition:all .3s;min-width:180px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+.ttt-mode-btn:hover{border-color:var(--hot);transform:translateY(-5px);box-shadow:0 12px 28px rgba(255,105,180,.3)}
+.ttt-mode-icon{font-size:2.8rem;margin-bottom:8px}
+.ttt-mode-label{font-weight:800;font-size:1.05rem;color:var(--dark)}
+.ttt-score{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-bottom:18px;background:rgba(255,255,255,.92);border-radius:16px;padding:12px 20px;box-shadow:var(--shadow)}
+.ttt-score-item{font-weight:700;font-size:.95rem}
+.ttt-score-item span{color:var(--hot)}
+.ttt-status{text-align:center;font-weight:800;font-size:1.15rem;color:var(--hot);margin-bottom:14px;min-height:32px}
+.ttt-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:320px;margin:0 auto 20px;aspect-ratio:1}
+.ttt-cell{background:#fff;border:3px solid var(--pastel);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2.8rem;font-weight:800;cursor:pointer;transition:all .2s;aspect-ratio:1;user-select:none;box-shadow:0 4px 12px rgba(0,0,0,.06)}
+.ttt-cell:hover:not(.filled):not(.disabled){background:var(--light);border-color:var(--hot);transform:scale(1.04)}
+.ttt-cell.filled{cursor:default}
+.ttt-cell.disabled{cursor:not-allowed;opacity:.85}
+.ttt-cell.x{color:#FF1493}
+.ttt-cell.o{color:#9B59B6}
+.ttt-cell.win-line{background:linear-gradient(135deg,#FFE4EC,#E8B4F8);border-color:var(--gold);animation:pulseWin .6s ease}
+@keyframes pulseWin{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.ttt-controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.ttt-stars{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:50}
+.ttt-star{position:absolute;font-size:1.4rem;animation:starFloat 1.8s ease-out forwards;opacity:0}
+@keyframes starFloat{0%{opacity:1;transform:translateY(0) scale(.5)}100%{opacity:0;transform:translateY(-80px) scale(1.3)}}
+.ttt-board-wrap{position:relative;max-width:320px;margin:0 auto}
+</style>
+</head>
+<body>
+
+<div id="welcome">
+  <img class="welcome-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Barbie_Logo.svg/512px-Barbie_Logo.svg.png" alt="Barbie Logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+  <div style="display:none;font-family:'Pacifico',cursive;font-size:3rem;color:#fff;text-shadow:0 4px 16px rgba(0,0,0,.3);margin-bottom:12px">Barbie</div>
+  <div class="w-title">¡Hola! Bienvenido/a al mundo de Barbie</div>
+  <div class="w-sub">Tú puedes ser lo que quieras ser ✨</div>
+  <div class="w-box" id="nameBox">
+    <h2>¿Cuál es tu nombre?</h2>
+    <input type="text" id="nameInput" placeholder="Escribe tu nombre..." maxlength="20" autocomplete="off">
+    <div class="name-actions">
+      <button class="btn btn-pink" id="btnContinue">Continuar</button>
+      <button class="btn btn-outline btn-sm" id="btnClearName">Borrar nombre</button>
+    </div>
+  </div>
+  <div class="w-box" id="charBox" style="display:none;margin-top:14px">
+    <h2>¿Con quién quieres jugar?</h2>
+    <p style="font-size:.9rem;color:#666;margin-bottom:12px">Elige el personaje. No tiene que ver con género.</p>
+    <div class="char-choice">
+      <div class="char-card" id="pickBarbie"><div class="char-emoji">💗</div><div class="char-label">BARBIE</div></div>
+      <div class="char-card ken" id="pickKen"><div class="char-emoji">💙</div><div class="char-label">KEN</div></div>
+    </div>
+    <div style="margin-top:16px"><button class="btn btn-outline btn-sm" id="btnBackName">← Cambiar nombre</button></div>
+  </div>
+</div>
+
+<div id="app">
+<nav>
+  <div class="nav-logo">Barbie Studio</div>
+  <div class="nav-links">
+    <button class="nav-btn active" data-sec="custom">Personalizar</button>
+    <button class="nav-btn" data-sec="gato">🎮 Juego del Gato</button>
+    <button class="nav-btn" data-sec="history">Historia</button>
+    <button class="nav-btn" data-sec="ruth">Ruth Handler</button>
+    <button class="nav-btn" data-sec="timeline">Línea de tiempo</button>
+    <button class="nav-btn" data-sec="facts">Datos curiosos</button>
+    <button class="nav-btn" id="btnChangeChar">Cambiar personaje</button>
+    <button class="nav-btn" id="btnChangeName">Cambiar nombre</button>
+  </div>
+  <div class="user-info">Hola, <span id="displayName">Amig@</span> · <span id="displayChar">Barbie</span></div>
+</nav>
+
+<main>
+<section class="section active" id="sec-custom">
+  <h1 class="page-title">Personaliza tu personaje</h1>
+  <p class="page-sub">Cambia pelo, ropa y colores. Cuando termines, guarda tu look 💖</p>
+  <div class="quote-box">"Tú puedes ser lo que quieras ser"</div>
+  <div class="custom-layout">
+    <div class="preview-card">
+      <div class="preview-title" id="previewTitle">Barbie</div>
+      <div class="stage">
+        <div class="doll" id="doll">
+          <div class="doll-hair h-long-wavy" id="hairEl"></div>
+          <div class="doll-head" id="headEl">
+            <div class="doll-eyes"><div class="doll-eye"></div><div class="doll-eye"></div></div>
+            <div class="doll-smile"></div>
+          </div>
+          <div class="doll-torso" id="torsoEl">
+            <div id="topDetails"></div>
+            <div class="doll-arm-l" id="armL"><div class="doll-hand-l"></div></div>
+            <div class="doll-arm-r" id="armR"><div class="doll-hand-r"></div></div>
+          </div>
+          <div class="doll-bottom" id="bottomEl"></div>
+          <div class="doll-legs" id="legsEl"></div>
+          <div class="doll-shoes" id="shoesEl"></div>
+        </div>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-pink btn-sm" id="btnSave">💾 Guardar mi look</button>
+        <button class="btn btn-outline btn-sm" id="btnReset">Reiniciar</button>
+      </div>
+    </div>
+    <div class="controls-card">
+      <div class="tab-btns">
+        <button class="tab-btn active" data-tab="hair">Pelo</button>
+        <button class="tab-btn" data-tab="clothes">Ropa</button>
+        <button class="tab-btn" data-tab="skin">Piel</button>
+      </div>
+      <div class="panel active" id="tab-hair">
+        <label class="section-label">Estilo de cabello</label>
+        <div class="option-grid" id="hairStyles"></div>
+        <label class="section-label">Color de cabello</label>
+        <div class="color-row" id="hairColors"></div>
+      </div>
+      <div class="panel" id="tab-clothes">
+        <label class="section-label">Estilo de polera / top</label>
+        <div class="option-grid" id="topStyles"></div>
+        <label class="section-label">Color del top</label>
+        <div class="color-row" id="topColors"></div>
+        <label class="section-label">Parte de abajo</label>
+        <div class="option-grid" id="bottomStyles"></div>
+        <label class="section-label">Color de abajo</label>
+        <div class="color-row" id="bottomColors"></div>
+        <label class="section-label">Zapatos</label>
+        <div class="color-row" id="shoeColors"></div>
+      </div>
+      <div class="panel" id="tab-skin">
+        <label class="section-label">Tono de piel</label>
+        <div class="color-row" id="skinTones"></div>
+      </div>
+    </div>
+  </div>
+  <div id="afterSave">
+    <div class="congrats">
+      <h2>✨ ¡Te quedó hermoso/a!</h2>
+      <p>Tu personaje está listo y se ve increíble. Ahora… ¿qué quieres ser hoy?</p>
+    </div>
+    <h2 style="color:var(--hot);text-align:center;margin-bottom:6px">💼 ¿Qué serás hoy?</h2>
+    <p style="text-align:center;color:#666;margin-bottom:14px">Elige una profesión y descubre tu misión con humor y buena onda 💖</p>
+    <div class="job-grid" id="jobGrid"></div>
+    <div class="job-result" id="jobResult">
+      <h3 id="jobTitle"></h3>
+      <p id="jobDesc"></p>
+      <button class="btn btn-pink btn-sm" style="margin-top:14px" id="btnOtherJob">Elegir otra profesión</button>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="sec-gato">
+  <h1 class="page-title">🎮 Juego del Gato</h1>
+  <p class="page-sub">El clásico tres en raya con estilo Barbie</p>
+  <div class="ttt-wrapper">
+    <div id="tttModeScreen" class="ttt-mode-screen">
+      <div class="ttt-mode-title">🎀 ¿Quieres jugar al gato? 🎀</div>
+      <div class="ttt-mode-sub">Elige cómo quieres jugar</div>
+      <div class="ttt-mode-btns">
+        <div class="ttt-mode-btn" id="tttPlayFriend"><div class="ttt-mode-icon">👯</div><div class="ttt-mode-label">Jugar con alguien</div></div>
+        <div class="ttt-mode-btn" id="tttPlayPC"><div class="ttt-mode-icon">🤖</div><div class="ttt-mode-label">Jugar contra la PC</div></div>
+      </div>
+    </div>
+    <div id="tttSymbolScreen" class="ttt-symbol-screen" style="display:none">
+      <div class="ttt-mode-title">¿Con qué quieres jugar?</div>
+      <div class="ttt-mode-sub">La PC usará el otro símbolo</div>
+      <div class="ttt-mode-btns">
+        <div class="ttt-mode-btn" id="tttChooseX"><div class="ttt-mode-icon" style="color:#FF1493">❌</div><div class="ttt-mode-label">Jugar con X</div></div>
+        <div class="ttt-mode-btn" id="tttChooseO"><div class="ttt-mode-icon" style="color:#9B59B6">⭕</div><div class="ttt-mode-label">Jugar con O</div></div>
+      </div>
+      <button class="btn btn-outline btn-sm" style="margin-top:20px" id="tttBackMode1">← Volver</button>
+    </div>
+    <div id="tttGameScreen" style="display:none">
+      <div class="ttt-score">
+        <div class="ttt-score-item">❌ X: <span id="tttScoreX">0</span></div>
+        <div class="ttt-score-item">⭕ O: <span id="tttScoreO">0</span></div>
+        <div class="ttt-score-item">🤝 Empates: <span id="tttScoreDraw">0</span></div>
+      </div>
+      <div class="ttt-status" id="tttStatus">Turno de X 💗</div>
+      <div class="ttt-board-wrap">
+        <div class="ttt-board" id="tttBoard"></div>
+        <div class="ttt-stars" id="tttStars"></div>
+      </div>
+      <div class="ttt-controls">
+        <button class="btn btn-pink btn-sm" id="tttNewGame">🔄 Nueva partida</button>
+        <button class="btn btn-outline btn-sm" id="tttResetScore">🔄 Reiniciar</button>
+        <button class="btn btn-outline btn-sm" id="tttChangeMode">🎮 Cambiar modo</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="sec-history">
+  <h1 class="page-title">Historia de Barbie</h1>
+  <p class="page-sub">Haz clic para descubrir ✨</p>
+  <div class="cards-grid">
+    <div class="reveal-card"><div class="reveal-header"><span>💗 Nace Barbie</span><span class="reveal-arrow">▼</span></div><div class="reveal-body">El 9 de marzo de 1959 se presentó la primera Barbie en Nueva York. Llevaba traje de baño a rayas y costaba unos 3 dólares.</div></div>
+    <div class="reveal-card"><div class="reveal-header"><span>💡 La idea</span><span class="reveal-arrow">▼</span></div><div class="reveal-body">Ruth Handler vio a su hija jugar con muñecas de papel adultas e imaginó una muñeca real con la que las niñas pudieran soñar su futuro.</div></div>
+    <div class="reveal-card"><div class="reveal-header"><span>🚀 Más que un juguete</span><span class="reveal-arrow">▼</span></div><div class="reveal-body">Barbie mostró que se podía soñar con ser astronauta, doctora o presidenta. Eso fue revolucionario.</div></div>
+    <div class="reveal-card"><div class="reveal-header"><span>🌍 Diversidad</span><span class="reveal-arrow">▼</span></div><div class="reveal-body">Con el tiempo Barbie incorporó distintos tonos de piel, cuerpos y estilos para que más personas se sientan representadas.</div></div>
+  </div>
+</section>
+
+<!-- RUTH HANDLER - AQUÍ VAN TUS IMÁGENES -->
+<section class="section" id="sec-ruth">
+  <h1 class="page-title">Ruth Handler: la mujer detrás de Barbie</h1>
+  <p class="page-sub">Un homenaje a quien imaginó nuevas posibilidades.</p>
+  <div class="ruth-section">
+    <div class="ruth-quote">“Detrás de una de las muñecas más famosas del mundo hubo una mujer que imaginó nuevas posibilidades para las niñas.”</div>
+    
+    <div class="ruth-photos">
+      <!-- Foto de Ruth sola -->
+      <div class="ruth-photo-card">
+        <img src="images/lol3.jpg" alt="Ruth Handler sola">
+        <p><strong>Ruth Handler</strong><br>Creadora de Barbie<br>(1916 – 2002)</p>
+      </div>
+      <!-- Foto de Ruth con su esposo -->
+      <div class="ruth-photo-card">
+        <img src="images/lol2.jpg" alt="Ruth Handler y Elliot Handler">
+        <p><strong>Ruth Handler y Elliot Handler</strong><br>Los fundadores de Mattel<br>con Barbie y Ken</p>
+      </div>
+    </div>
+
+    <div class="reveal-card" style="margin-top:12px"><div class="reveal-header"><span>¿Quién fue Ruth?</span><span class="reveal-arrow">▼</span></div><div class="reveal-body">Ruth Marianna Handler nació el 4 de noviembre de 1916 en Denver, Colorado (EE.UU.). Falleció el 27 de abril de 2002 en Los Ángeles. Junto a su esposo Elliot Handler cofundó Mattel en 1945. Observó a su hija Barbara jugar con muñecas de papel y se dio cuenta de que las niñas necesitaban una muñeca adulta con la que proyectar su propio futuro.</div></div>
+    <div class="reveal-card" style="margin-top:10px"><div class="reveal-header"><span>El nacimiento de Barbie</span><span class="reveal-arrow">▼</span></div><div class="reveal-body">En 1959 lanzó Barbie (llamada así por su hija Barbara). La primera Barbie se presentó en la feria del juguete de Nueva York. Fue un éxito inmediato y cambió para siempre la forma de jugar de millones de niñas.</div></div>
+    <div class="reveal-card" style="margin-top:10px"><div class="reveal-header"><span>Su legado y valentía</span><span class="reveal-arrow">▼</span></div><div class="reveal-body">Más adelante enfrentó un cáncer de mama y, tras su experiencia, fundó una empresa de prótesis mamarias. Demostró la misma determinación que la llevó a crear Barbie: la idea de que las niñas merecían soñar en grande.</div></div>
+    <div class="reveal-card" style="margin-top:10px"><div class="reveal-header"><span>Elliot Handler y Hot Wheels</span><span class="reveal-arrow">▼</span></div><div class="reveal-body">Elliot Handler, esposo de Ruth y cofundador de Mattel, impulsó la creación de Hot Wheels en 1968. La misma familia detrás de Barbie también está ligada a otra de las marcas de juguetes más famosas del mundo.</div></div>
+  </div>
+</section>
+
+<section class="section" id="sec-timeline">
+  <h1 class="page-title">Línea de tiempo</h1>
+  <p class="page-sub">Haz clic en cada año.</p>
+  <div class="timeline" id="timeline"></div>
+</section>
+
+<section class="section" id="sec-facts">
+  <h1 class="page-title">✨ Datos curiosos</h1>
+  <div class="cards-grid" id="factsGrid"></div>
+</section>
+</main>
+
+<div class="final-msg">
+  <h2>Tú puedes ser lo que quieras ser</h2>
+  <p>Gracias por visitar Barbie Studio 💖✨</p>
+</div>
+</div>
+
+<script>
+let userName='',currentChar='barbie';
+let state={hairStyle:'h-long-wavy',hairColor:'#FFD700',topStyle:'solid',topColor:'#FF69B4',bottomColor:'#FF1493',shoeColor:'#FF1493',skin:'#FFDBB5',bottomStyle:'skirt'};
+
+const hairStyles=[{id:'h-long-straight',label:'Lacio largo'},{id:'h-long-wavy',label:'Ondulado largo'},{id:'h-long-curly',label:'Rizado largo'},{id:'h-afro',label:'Afro'},{id:'h-short-straight',label:'Lacio corto'},{id:'h-short-wavy',label:'Ondulado corto'},{id:'h-short-curly',label:'Rizado corto'},{id:'h-ponytail',label:'Cola de caballo'},{id:'h-two-tails',label:'Dos colitas'},{id:'h-braid',label:'Trenza'},{id:'h-bun',label:'Moño'},{id:'h-buzz',label:'Muy corto'},{id:'h-bald',label:'Sin cabello'}];
+const hairColors=[{c:'#FFD700',n:'Rubio'},{c:'#8B4513',n:'Castaño'},{c:'#1a1a1a',n:'Negro'},{c:'#C0392B',n:'Rojo'},{c:'#FF69B4',n:'Rosa'},{c:'#9B59B6',n:'Morado'},{c:'#5DADE2',n:'Azul'},{c:'#27AE60',n:'Verde'},{c:'#BDC3C7',n:'Gris'},{c:'#F5F5F5',n:'Blanco'}];
+const topStyles=[{id:'solid',label:'✨ Polera'},{id:'hoodie',label:'💜 Polerón'},{id:'shirt',label:'👔 Camisa'},{id:'blazer',label:'💗 Blazer'},{id:'chef',label:'👩‍🍳 Chef'},{id:'lab',label:'🧪 Bata'}];
+const bottomStyles=[{id:'skirt',label:'Falda'},{id:'pants',label:'Pantalón'},{id:'shorts',label:'Shorts'}];
+const clothColors=[{c:'#FF69B4'},{c:'#FF1493'},{c:'#5DADE2'},{c:'#9B59B6'},{c:'#F1C40F'},{c:'#E74C3C'},{c:'#1ABC9C'},{c:'#FFFFFF'},{c:'#2C3E50'},{c:'#E67E22'},{c:'#FD79A8'},{c:'#00CEC9'}];
+const shoeColors=[{c:'#FF1493'},{c:'#1a1a1a'},{c:'#FFFFFF'},{c:'#FFD700'},{c:'#5DADE2'},{c:'#8E44AD'}];
+const skinTones=[{c:'#FFDBB5',n:'Claro'},{c:'#F1C27D',n:'Medio claro'},{c:'#E0AC69',n:'Medio'},{c:'#C68642',n:'Moreno'},{c:'#8D5524',n:'Oscuro'},{c:'#5C3317',n:'Muy oscuro'}];
+const jobs=[{icon:'👩‍🏫',name:'Profesora',desc:'¡Hoy eres profesora! Tu misión: hacer que aprender sea tan divertido que nadie quiera que termine la clase. ✨'},{icon:'👩‍🔧',name:'Mecánica',desc:'¡Hoy eres mecánica! Ningún motor se resiste a ti. Arregla todo con estilo y un toque de grasa (rosa, claro). 🔧'},{icon:'👩‍💻',name:'Ingeniera',desc:'¡Hoy eres ingeniera! Diseña el futuro, resuelve problemas y demuestra que las ideas brillantes no tienen género. 💡'},{icon:'👩‍⚕️',name:'Médica',desc:'¡Hoy eres médica! Tu bata blanca es símbolo de cuidado. Ayuda a todos a sentirse mejor… ¡con mucho corazón! 💖'},{icon:'👩‍🚀',name:'Astronauta',desc:'¡Hoy viajas al espacio! Explora planetas, saluda a las estrellas y recuerda: el universo es tu playground. 🚀'},{icon:'👩‍⚖️',name:'Abogada',desc:'¡Hoy eres abogada! Defiende ideas, busca justicia y habla con la confianza de quien sabe que tiene razón. ⚖️'},{icon:'👩‍🔬',name:'Científica',desc:'¡Hoy eres científica! Experimenta, pregunta y descubre. Cada “¿y si…?” puede cambiar el mundo. 🔬'},{icon:'👩‍✈️',name:'Piloto',desc:'¡Hoy eres piloto! Despega, lleva a todos a su destino y disfruta de la vista desde arriba. ✈️'},{icon:'👩‍💼',name:'Presidenta',desc:'¡Hoy eres presidenta! Escucha, decide y trabaja por las personas. El liderazgo también se lleva con brillo. 👑'},{icon:'👩‍🎨',name:'Artista',desc:'¡Hoy eres artista! El lienzo está en blanco y es todo tuyo. Crea algo que solo tú podrías imaginar. 🎨'},{icon:'👩‍🍳',name:'Chef',desc:'¡Hoy eres chef! La cocina es tu escenario. Prepara algo delicioso y sirve con una sonrisa de estrella. 🧁'},{icon:'👩‍🚒',name:'Bombera',desc:'¡Hoy eres bombera! Valentía, equipo y acción. Cuando alguien necesita ayuda, tú llegas. 🔥'},{icon:'👮‍♀️',name:'Policía',desc:'¡Hoy eres policía! Protege, ayuda y haz que tu comunidad se sienta más segura. 💪'},{icon:'👩‍🌾',name:'Agrónoma',desc:'¡Hoy eres agrónoma! Trabaja con la tierra y crea nuevas formas de alimentar al mundo. 🌱'},{icon:'👩‍💻',name:'Programadora',desc:'¡Hoy eres programadora! Cada línea de código es un superpoder. Construye apps, juegos o lo que se te ocurra. 💻'}];
+const timelineData=[{year:'1959',title:'Nace Barbie',desc:'Se presenta la primera Barbie el 9 de marzo en Nueva York.'},{year:'1961',title:'Aparece Ken',desc:'Se lanza Ken, llamado así por el hijo de Ruth.'},{year:'1965-80s',title:'Profesiones',desc:'Barbie se convierte en astronauta, doctora, piloto y muchas más.'},{year:'1980s-2000s',title:'Más diversidad',desc:'Aparecen muñecas con distintos tonos de piel y rasgos.'},{year:'2010s-hoy',title:'Inclusión',desc:'Distintos cuerpos, estilos y capacidades. El mensaje sigue vivo.'},{year:'2023',title:'Barbie en el cine',desc:'La película de Greta Gerwig se convierte en fenómeno global.'}];
+const factsData=[{q:'¿De dónde viene el nombre?',a:'Barbie toma su nombre de Barbara, hija de Ruth. Ken se llama así por su hijo Kenneth.'},{q:'¿Cuánto costó la primera?',a:'La primera Barbie se vendió por unos 3 dólares en 1959.'},{q:'¿Quiénes fundaron Mattel?',a:'Ruth y Elliot Handler, junto con Harold “Matt” Matson.'},{q:'¿Hot Wheels?',a:'Elliot Handler impulsó Hot Wheels en 1968. ¡La misma familia detrás de Barbie!'},{q:'¿Solo modelo?',a:'No. Barbie ha tenido cientos de profesiones a lo largo de los años.'},{q:'¿La película 2023?',a:'Dirigida por Greta Gerwig, con Margot Robbie y Ryan Gosling. Fue un fenómeno cultural.'}];
+
+document.getElementById('btnContinue').onclick=()=>{userName=document.getElementById('nameInput').value.trim()||'Amig@';document.getElementById('nameBox').style.display='none';document.getElementById('charBox').style.display='block'};
+document.getElementById('btnClearName').onclick=()=>{document.getElementById('nameInput').value='';userName=''};
+document.getElementById('btnBackName').onclick=()=>{document.getElementById('charBox').style.display='none';document.getElementById('nameBox').style.display='block'};
+document.getElementById('pickBarbie').onclick=()=>startApp('barbie');
+document.getElementById('pickKen').onclick=()=>startApp('ken');
+
+function startApp(char){
+  currentChar=char;
+  document.getElementById('displayName').textContent=userName;
+  document.getElementById('displayChar').textContent=char==='barbie'?'Barbie':'Ken';
+  document.getElementById('previewTitle').textContent=char==='barbie'?'Barbie':'Ken';
+  document.getElementById('welcome').classList.add('hidden');
+  document.getElementById('app').classList.add('visible');
+  if(char==='ken') document.body.classList.add('ken-mode');
+  else document.body.classList.remove('ken-mode');
+  applyDefaults();renderAll();updateCharacter();renderJobs();
+  document.getElementById('afterSave').classList.remove('show');
+  document.getElementById('jobResult').classList.remove('show');
+}
+
+document.querySelectorAll('.nav-btn[data-sec]').forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll('.nav-btn[data-sec]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById('sec-'+btn.dataset.sec).classList.add('active');
+  };
+});
+document.getElementById('btnChangeChar').onclick=()=>{document.getElementById('welcome').classList.remove('hidden');document.getElementById('app').classList.remove('visible');document.getElementById('nameBox').style.display='none';document.getElementById('charBox').style.display='block'};
+document.getElementById('btnChangeName').onclick=()=>{document.getElementById('welcome').classList.remove('hidden');document.getElementById('app').classList.remove('visible');document.getElementById('nameBox').style.display='block';document.getElementById('charBox').style.display='none';document.getElementById('nameInput').value=userName==='Amig@'?'':userName};
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+  };
+});
+
+function renderAll(){
+  const hs=document.getElementById('hairStyles');hs.innerHTML='';
+  hairStyles.forEach(h=>{const b=document.createElement('button');b.className='opt-btn'+(state.hairStyle===h.id?' active':'');b.textContent=h.label;b.onclick=()=>{state.hairStyle=h.id;updateCharacter();renderAll()};hs.appendChild(b)});
+  const hc=document.getElementById('hairColors');hc.innerHTML='';
+  hairColors.forEach(col=>{const s=document.createElement('div');s.className='color-swatch'+(state.hairColor===col.c?' active':'');s.style.background=col.c;s.title=col.n;s.onclick=()=>{state.hairColor=col.c;updateCharacter();renderAll()};hc.appendChild(s)});
+  const ts=document.getElementById('topStyles');ts.innerHTML='';
+  topStyles.forEach(t=>{const b=document.createElement('button');b.className='opt-btn'+(state.topStyle===t.id?' active':'');b.textContent=t.label;b.onclick=()=>{state.topStyle=t.id;updateCharacter();renderAll()};ts.appendChild(b)});
+  const tc=document.getElementById('topColors');tc.innerHTML='';
+  clothColors.forEach(col=>{const s=document.createElement('div');s.className='color-swatch'+(state.topColor===col.c?' active':'');s.style.background=col.c;s.onclick=()=>{state.topColor=col.c;updateCharacter();renderAll()};tc.appendChild(s)});
+  const bs=document.getElementById('bottomStyles');bs.innerHTML='';
+  bottomStyles.forEach(t=>{const b=document.createElement('button');b.className='opt-btn'+(state.bottomStyle===t.id?' active':'');b.textContent=t.label;b.onclick=()=>{state.bottomStyle=t.id;updateCharacter();renderAll()};bs.appendChild(b)});
+  const bc=document.getElementById('bottomColors');bc.innerHTML='';
+  clothColors.forEach(col=>{const s=document.createElement('div');s.className='color-swatch'+(state.bottomColor===col.c?' active':'');s.style.background=col.c;s.onclick=()=>{state.bottomColor=col.c;updateCharacter();renderAll()};bc.appendChild(s)});
+  const sc=document.getElementById('shoeColors');sc.innerHTML='';
+  shoeColors.forEach(col=>{const s=document.createElement('div');s.className='color-swatch'+(state.shoeColor===col.c?' active':'');s.style.background=col.c;s.onclick=()=>{state.shoeColor=col.c;updateCharacter();renderAll()};sc.appendChild(s)});
+  const sk=document.getElementById('skinTones');sk.innerHTML='';
+  skinTones.forEach(col=>{const s=document.createElement('div');s.className='color-swatch'+(state.skin===col.c?' active':'');s.style.background=col.c;s.title=col.n;s.onclick=()=>{state.skin=col.c;updateCharacter();renderAll()};sk.appendChild(s)});
+}
+
+function updateCharacter(){
+  const hair=document.getElementById('hairEl');
+  hair.className='doll-hair '+state.hairStyle;hair.style.background=state.hairColor;
+  document.getElementById('headEl').style.background=state.skin;
+  document.getElementById('legsEl').style.background=state.skin;
+  document.getElementById('armL').style.background=state.skin;
+  document.getElementById('armR').style.background=state.skin;
+  document.querySelectorAll('.doll-hand-l,.doll-hand-r').forEach(h=>h.style.background=state.skin);
+  const torso=document.getElementById('torsoEl');
+  const details=document.getElementById('topDetails');
+  torso.style.background=state.topColor;torso.className='doll-torso';details.innerHTML='';
+  if(state.topStyle==='hoodie'){torso.classList.add('top-hoodie');details.innerHTML='<div class="top-detail hood"></div><div class="top-detail kangaroo"></div>'}
+  else if(state.topStyle==='shirt'){torso.classList.add('top-shirt');details.innerHTML=`<div class="top-detail collar-left"></div><div class="top-detail collar-right"></div><div class="top-detail btn-row"><span class="btn-dot"></span><span class="btn-dot"></span><span class="btn-dot"></span></div><div class="top-detail pocket"></div>`}
+  else if(state.topStyle==='blazer'){torso.classList.add('top-blazer');details.innerHTML=`<div class="top-detail lapel-l"></div><div class="top-detail lapel-r"></div><div class="top-detail blazer-btn"></div>`}
+  else if(state.topStyle==='chef'){torso.classList.add('top-chef');details.innerHTML=`<div class="top-detail chef-collar"></div><div class="top-detail chef-btns"><span></span><span></span><span></span></div>`}
+  else if(state.topStyle==='lab'){torso.classList.add('top-lab');details.innerHTML=`<div class="top-detail lab-collar"></div><div class="top-detail lab-pocket"></div>`}
+  else{torso.classList.add('top-tshirt');details.innerHTML='<div class="top-detail top-collar-round"></div>'}
+  const bottom=document.getElementById('bottomEl');
+  bottom.style.background=state.bottomColor;
+  if(state.bottomStyle==='pants'){bottom.style.width='52px';bottom.style.height='125px';bottom.style.borderRadius='8px 8px 4px 4px';bottom.style.marginTop='-12px'}
+  else if(state.bottomStyle==='shorts'){bottom.style.width='70px';bottom.style.height='50px';bottom.style.borderRadius='8px';bottom.style.marginTop='-8px'}
+  else{bottom.style.width='95px';bottom.style.height='82px';bottom.style.borderRadius='10px 10px 34px 34px';bottom.style.marginTop='-10px'}
+  document.getElementById('shoesEl').style.background=state.shoeColor;
+}
+
+function applyDefaults(){
+  if(currentChar==='ken'){state.hairStyle='h-short-straight';state.hairColor='#1a1a1a';state.topColor='#5DADE2';state.bottomColor='#2C3E50';state.bottomStyle='pants';state.shoeColor='#1a1a1a';state.topStyle='solid'}
+  else{state.hairStyle='h-long-wavy';state.hairColor='#FFD700';state.topColor='#FF69B4';state.bottomColor='#FF1493';state.bottomStyle='skirt';state.shoeColor='#FF1493';state.topStyle='solid'}
+  state.skin='#FFDBB5';
+}
+
+document.getElementById('btnSave').onclick=()=>{document.getElementById('afterSave').classList.add('show');document.getElementById('afterSave').scrollIntoView({behavior:'smooth',block:'start'});document.getElementById('jobResult').classList.remove('show')};
+document.getElementById('btnReset').onclick=()=>{applyDefaults();updateCharacter();renderAll();document.getElementById('afterSave').classList.remove('show')};
+
+function renderJobs(){
+  const grid=document.getElementById('jobGrid');grid.innerHTML='';
+  jobs.forEach(j=>{const b=document.createElement('button');b.className='job-btn';b.innerHTML=`<div class="job-icon">${j.icon}</div><div class="job-name">${j.name}</div>`;b.onclick=()=>{document.querySelectorAll('.job-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('jobTitle').textContent='¡Hoy eres '+j.name+'!';document.getElementById('jobDesc').textContent=j.desc;document.getElementById('jobResult').classList.add('show')};grid.appendChild(b)});
+}
+document.getElementById('btnOtherJob').onclick=()=>{document.getElementById('jobResult').classList.remove('show');document.querySelectorAll('.job-btn').forEach(b=>b.classList.remove('active'))};
+
+document.querySelectorAll('.reveal-card').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('open')));
+const tl=document.getElementById('timeline');
+timelineData.forEach(t=>{const d=document.createElement('div');d.className='tl-item';d.innerHTML=`<div class="tl-year">${t.year}</div><div class="tl-title">${t.title}</div><div class="tl-desc">${t.desc}</div>`;d.onclick=()=>d.classList.toggle('open');tl.appendChild(d)});
+const fg=document.getElementById('factsGrid');
+factsData.forEach(f=>{const d=document.createElement('div');d.className='reveal-card';d.innerHTML=`<div class="reveal-header"><span>${f.q}</span><span class="reveal-arrow">▼</span></div><div class="reveal-body">${f.a}</div>`;d.onclick=()=>d.classList.toggle('open');fg.appendChild(d)});
+document.getElementById('nameInput').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('btnContinue').click()});
+
+/* Juego del Gato */
+let tttBoard=Array(9).fill(null),tttMode=null,tttPlayerSymbol='X',tttTurn='X',tttGameOver=false,tttScore={X:0,O:0,draw:0},tttFirstWinDone=false,tttStartPlayer='X',tttAutoNextTimer=null;
+const tttWinCombos=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+function tttShow(screen){document.getElementById('tttModeScreen').style.display=screen==='mode'?'block':'none';document.getElementById('tttSymbolScreen').style.display=screen==='symbol'?'block':'none';document.getElementById('tttGameScreen').style.display=screen==='game'?'block':'none'}
+document.getElementById('tttPlayFriend').onclick=()=>{tttMode='friend';tttPlayerSymbol='X';tttStartPlayer='X';tttStartGame()};
+document.getElementById('tttPlayPC').onclick=()=>{tttMode='pc';tttShow('symbol')};
+document.getElementById('tttChooseX').onclick=()=>{tttPlayerSymbol='X';tttStartPlayer='X';tttStartGame()};
+document.getElementById('tttChooseO').onclick=()=>{tttPlayerSymbol='O';tttStartPlayer='O';tttStartGame()};
+document.getElementById('tttBackMode1').onclick=()=>tttShow('mode');
+document.getElementById('tttChangeMode').onclick=()=>{clearTimeout(tttAutoNextTimer);tttShow('mode');tttGameOver=true};
+
+function tttStartGame(){clearTimeout(tttAutoNextTimer);tttBoard=Array(9).fill(null);tttTurn=tttStartPlayer;tttGameOver=false;tttShow('game');tttRenderBoard();tttUpdateStatus();if(tttMode==='pc'&&tttTurn!==tttPlayerSymbol)setTimeout(tttPCMove,500)}
+function tttRenderBoard(){const board=document.getElementById('tttBoard');board.innerHTML='';tttBoard.forEach((val,i)=>{const cell=document.createElement('div');cell.className='ttt-cell'+(val?' filled '+val.toLowerCase():'')+(tttGameOver?' disabled':'');cell.textContent=val==='X'?'❌':val==='O'?'⭕':'';cell.onclick=()=>tttHandleClick(i);board.appendChild(cell)})}
+function tttHandleClick(i){if(tttGameOver||tttBoard[i])return;if(tttMode==='pc'&&tttTurn!==tttPlayerSymbol)return;tttBoard[i]=tttTurn;tttRenderBoard();const result=tttCheckWinner();if(result){tttEndGame(result);return}tttTurn=tttTurn==='X'?'O':'X';tttUpdateStatus();if(tttMode==='pc'&&!tttGameOver&&tttTurn!==tttPlayerSymbol)setTimeout(tttPCMove,480)}
+function tttUpdateStatus(){const st=document.getElementById('tttStatus');if(tttGameOver)return;st.textContent='Turno de '+tttTurn+' 💗'}
+function tttCheckWinner(){for(const[a,b,c]of tttWinCombos){if(tttBoard[a]&&tttBoard[a]===tttBoard[b]&&tttBoard[a]===tttBoard[c])return{winner:tttBoard[a],line:[a,b,c]}}if(tttBoard.every(c=>c!==null))return{winner:'draw'};return null}
+function tttEndGame(result){tttGameOver=true;const st=document.getElementById('tttStatus');if(result.winner==='draw'){st.textContent='💗 ¡EMPATE! 💗';tttScore.draw++}else{st.textContent='🎉 ¡GANÓ '+result.winner+'! 🎉';tttScore[result.winner]++;const cells=document.querySelectorAll('.ttt-cell');result.line.forEach(i=>cells[i].classList.add('win-line'));const humanWon=(tttMode==='friend')||(result.winner===tttPlayerSymbol);if(humanWon&&!tttFirstWinDone){tttFirstWinDone=true;tttCelebrate()}}document.getElementById('tttScoreX').textContent=tttScore.X;document.getElementById('tttScoreO').textContent=tttScore.O;document.getElementById('tttScoreDraw').textContent=tttScore.draw;tttRenderBoard();tttStartPlayer=tttStartPlayer==='X'?'O':'X';tttAutoNextTimer=setTimeout(()=>tttStartGame(),2200)}
+function tttCelebrate(){const container=document.getElementById('tttStars');container.innerHTML='';const symbols=['✨','⭐','💖','🌟','✨','⭐'];for(let i=0;i<14;i++){const star=document.createElement('div');star.className='ttt-star';star.textContent=symbols[i%symbols.length];star.style.left=(10+Math.random()*80)+'%';star.style.top=(20+Math.random()*60)+'%';star.style.animationDelay=(Math.random()*0.6)+'s';container.appendChild(star)}setTimeout(()=>{container.innerHTML=''},2200)}
+function tttPCMove(){if(tttGameOver)return;const pcSymbol=tttPlayerSymbol==='X'?'O':'X';let move=tttFindWinningMove(pcSymbol);if(move===null)move=tttFindWinningMove(tttPlayerSymbol);if(move===null){if(Math.random()<0.65){if(tttBoard[4]===null)move=4;else{const corners=[0,2,6,8].filter(i=>tttBoard[i]===null);if(corners.length)move=corners[Math.floor(Math.random()*corners.length)];else{const empty=tttBoard.map((v,i)=>v===null?i:null).filter(v=>v!==null);move=empty[Math.floor(Math.random()*empty.length)]}}}else{const empty=tttBoard.map((v,i)=>v===null?i:null).filter(v=>v!==null);move=empty[Math.floor(Math.random()*empty.length)]}}tttBoard[move]=tttTurn;tttRenderBoard();const result=tttCheckWinner();if(result){tttEndGame(result);return}tttTurn=tttTurn==='X'?'O':'X';tttUpdateStatus()}
+function tttFindWinningMove(symbol){for(const[a,b,c]of tttWinCombos){const line=[tttBoard[a],tttBoard[b],tttBoard[c]];const count=line.filter(v=>v===symbol).length;const empty=line.filter(v=>v===null).length;if(count===2&&empty===1){if(tttBoard[a]===null)return a;if(tttBoard[b]===null)return b;if(tttBoard[c]===null)return c}}return null}
+document.getElementById('tttNewGame').onclick=()=>{clearTimeout(tttAutoNextTimer);tttStartGame()};
+document.getElementById('tttResetScore').onclick=()=>{clearTimeout(tttAutoNextTimer);tttScore={X:0,O:0,draw:0};document.getElementById('tttScoreX').textContent='0';document.getElementById('tttScoreO').textContent='0';document.getElementById('tttScoreDraw').textContent='0';tttStartPlayer='X';tttFirstWinDone=false;tttStartGame()};
+</script>
+</body>
+</html>
